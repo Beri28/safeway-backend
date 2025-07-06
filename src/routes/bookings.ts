@@ -81,7 +81,6 @@ router.get('/user/:userId', authenticate, async (req: Request, res: Response, ne
   }
 });
 
-
 // @route   PATCH /api/bookings/:id/cancel
 // @desc    Cancel a booking
 // @access  Protected
@@ -120,12 +119,24 @@ router.get('/', authenticate, requireAdmin, async (req: Request, res: Response, 
 // @access  Protected
 router.get('/:id', authenticate, async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
-    const booking = await Booking.findById(req.params.id).populate('busId userId');
+    const booking = await Booking.findById(req.params.id).populate(['busId' ,'userId']);
     if (!booking) return res.status(404).json({ message: 'Booking not found' });
     // @ts-ignore
     if (req.user.role !== 'admin' && req.user.id !== booking.userId.toString()) {
       return res.status(403).json({ message: 'Forbidden' });
     }
+    res.json(booking);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/receipt/:id', async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    console.log(req.params)
+    const booking = await Booking.findById(req.params.id).populate(['busId', 'userId']);
+    console.log(booking)
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
     res.json(booking);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
